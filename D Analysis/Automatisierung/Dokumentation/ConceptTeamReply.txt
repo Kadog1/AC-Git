@@ -1,0 +1,21 @@
+Anpassungen Outlook VBA:
+	- Anpassungen SendNotifications Prozess:
+		In Abhaengigkeit des AC_Status...
+		InputDataSent, WaitingForInputData, "":
+			Do Nothing
+		(Before) InProgress (InputDataAvailable, InputDataReceived, InProgress, ReadyForReview):
+			1 Verschieben des ersten "* 1_CAD-Adressabgleich Adressenabfrage Mandant *.xlsx" in 2. CAD_Abgleich/prevFiles
+			2 Abspeichern des Nachlieferungs-"* 1_CAD-Adressabgleich Adressenabfrage Mandant *.xlsx" in 2. CAD_Abgleich
+			3 resetten des tsInputDataAvailable -> Dies triggert ein erneuter Screenshot-Scan fuer das Nachlieferungs-WS
+		Restliche Status:
+			1 Move Mail to Team Reply Processed (Kein erneuter ScreenshotScan)
+
+	- Current Team Reply Process:
+		readDatenSammlerAuditi_CON, readDatenSammler_CON, readDatenSammler:
+			InputDataReceived -> InputDataAvailable
+			tsInputDataReceived -> tsInputDataAvailable
+
+Run ScreenshotScan for OrderNo WHERE AC_Status = InputDataAvailable
+	Small Adjustment of Python Script Main.
+        Set AC_Status -> InputDataReceived
+	Set tsInputDataReceived

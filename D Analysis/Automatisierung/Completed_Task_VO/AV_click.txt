@@ -1,0 +1,80 @@
+﻿Private Sub AV_Click()
+
+    'Beim Klicken: erstellt die Folder & öffnet das mailtemaplte
+
+    Dim path_2 As String
+    Dim path_3 As String
+    Dim tempname As String
+    Dim OrderNo As String, docLang As String
+    Dim period As String
+
+    'On Error GoTo Errormsg
+
+    OrderNo = Me.Alltasks.Column(0)
+    docLang = Me.Alltasks.Column(8)
+    
+    If docLang = "DE" Then
+    
+        docLang = ""
+        
+    Else
+    
+        docLang = "_" & docLang
+        
+    End If
+
+    If Len(Dir("\\Defrnappfl101.ey.net\101fra00010\T\TCC_SB\Z_Archive\eConfirmations\Datenbank\C Workplace\" & OrderNo, vbDirectory)) = 0 Then
+        MkDir "\\Defrnappfl101.ey.net\101fra00010\T\TCC_SB\Z_Archive\eConfirmations\Datenbank\C Workplace\" & OrderNo
+    End If
+
+    path_2 = "\\Defrnappfl101.ey.net\101fra00010\T\TCC_SB\Z_Archive\eConfirmations\Datenbank\C Workplace\" & OrderNo & "\2. CAD_Abgleich\"
+    If Len(Dir(path_2, vbDirectory)) = 0 Then
+        MkDir path_2
+    End If
+
+    path_3 = "\\Defrnappfl101.ey.net\101fra00010\T\TCC_SB\Z_Archive\eConfirmations\Datenbank\C Workplace\" & OrderNo & "\3. Team Approval\"
+    If Len(Dir(path_3, vbDirectory)) = 0 Then
+        MkDir path_3
+    End If
+
+    'copy template
+    tempname = "\\Defrnappfl101.ey.net\101fra00010\T\TCC_SB\Z_Archive\eConfirmations\Datenbank\D Dokumentation Templates\2_CAD-Adressabgleich Workbook Template" & docLang & ".xlsm"
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    fso.CopyFile tempname, path_2
+    
+    
+    '# New Feature - Run Excel Input import directly
+    Dim str_fileName As String
+    str_fileName = Dir$(path_2 & "*1_CAD-*" & ".xlsx")
+    
+    If Len(str_fileName) > 0 Then
+
+        Set XL = CreateObject("Excel.Application")
+        Set wb = XL.Workbooks.Open(path_2 & "2_CAD-Adressabgleich Workbook Template" & docLang & ".xlsm")
+        XL.Visible = True
+        
+        XL.Run "LoadInput_Click", path_2, str_fileName
+
+    Else
+    
+        MsgBox "No Inputdata Workbook found! Please check folder manually!"
+    
+    End If
+    
+    Exit Sub
+
+
+Errormsg:
+    If CStr(Err.Number) = "3044" Then
+        MsgBox ("No connection to the server. Please check the connection and try again")
+    ElseIf CStr(Err.Number) = "94" Then
+        MsgBox ("Please select an order")
+        
+    Else
+        MsgBox ("Error processing documentation file.")
+    
+    
+    End If
+
+
+End Sub
